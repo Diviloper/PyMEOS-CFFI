@@ -98,8 +98,20 @@ def tstzset_make_modifier(function: str) -> str:
         function.replace("values: int", "values: list[int]")
         .replace(", count: int", "")
         .replace(
-            "values_converted = _ffi.cast('const TimestampTz *', values)",
+            "values_converted = datetime_to_timestamptz(values)",
             "values_converted = [_ffi.cast('const TimestampTz', x) for x in values]",
+        )
+        .replace("count", "len(values)")
+    )
+
+
+def dateset_make_modifier(function: str) -> str:
+    return (
+        function.replace("values: date", "values: List[date]")
+        .replace(", count: int", "")
+        .replace(
+            "values_converted = date_to_date_adt(values)",
+            "values_converted = [_ffi.cast('const DateADT', x) for x in values]",
         )
         .replace("count", "len(values)")
     )

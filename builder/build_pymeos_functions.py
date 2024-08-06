@@ -77,7 +77,7 @@ function_modifiers = {
     "tbox_as_wkb": as_wkb_modifier,
     "stbox_as_wkb": as_wkb_modifier,
     "tstzset_make": tstzset_make_modifier,
-    "dateset_make": array_parameter_modifier("values", "count"),
+    "dateset_make": dateset_make_modifier,
     "intset_make": array_parameter_modifier("values", "count"),
     "bigintset_make": array_parameter_modifier("values", "count"),
     "floatset_make": array_parameter_modifier("values", "count"),
