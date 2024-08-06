@@ -2,6 +2,7 @@ import os.path
 import sys
 
 from build_pymeos_functions_modifiers import *
+from build_pymeos_functions_overrides import *
 from objects import Conversion, conversion_map
 
 
@@ -44,12 +45,12 @@ class ReturnType:
 
 # List of functions defined in functions.py that shouldn't be exported
 
-hidden_functions = [
+hidden_functions: list[str] = [
     "_check_error",
 ]
 
 # List of MEOS functions that should not be defined in functions.py
-skipped_functions = [
+skipped_functions: list[str] = [
     "py_error_handler",
     "meos_initialize_timezone",
     "meos_initialize_error_handler",
@@ -58,18 +59,21 @@ skipped_functions = [
 
 function_notes = {}
 
-function_modifiers = {
-    "meos_initialize": meos_initialize_modifier,
+function_overrides: dict[str, str] = {
+    "meos_initialize": meos_initialize_override(),
+    "cstring2text": cstring2text_override(),
+    "text2cstring": text2cstring_override(),
+    "temporal_from_wkb": from_wkb_override("temporal_from_wkb", "Temporal"),
+    "set_from_wkb": from_wkb_override("set_from_wkb", "Set"),
+    "span_from_wkb": from_wkb_override("span_from_wkb", "Span"),
+    "spanset_from_wkb": from_wkb_override("spanset_from_wkb", "SpanSet"),
+    "tbox_from_wkb": from_wkb_override("tbox_from_wkb", "TBOX"),
+    "stbox_from_wkb": from_wkb_override("stbox_from_wkb", "STBOX"),
+}
+
+function_modifiers: dict[str, Callable[[str], str]] = {
     "meos_finalize": remove_error_check_modifier,
-    "cstring2text": cstring2text_modifier,
-    "text2cstring": text2cstring_modifier,
     "spanset_make": spanset_make_modifier,
-    "temporal_from_wkb": from_wkb_modifier("temporal_from_wkb", "Temporal"),
-    "set_from_wkb": from_wkb_modifier("set_from_wkb", "Set"),
-    "span_from_wkb": from_wkb_modifier("span_from_wkb", "Span"),
-    "spanset_from_wkb": from_wkb_modifier("spanset_from_wkb", "SpanSet"),
-    "tbox_from_wkb": from_wkb_modifier("tbox_from_wkb", "TBOX"),
-    "stbox_from_wkb": from_wkb_modifier("stbox_from_wkb", "STBOX"),
     "temporal_as_wkb": as_wkb_modifier,
     "set_as_wkb": as_wkb_modifier,
     "span_as_wkb": as_wkb_modifier,
@@ -88,7 +92,7 @@ function_modifiers = {
 }
 
 # List of result function parameters in tuples of (function, parameter)
-result_parameters = {
+result_parameters: set[tuple[str, str]] = {
     ("tbool_value_at_timestamptz", "value"),
     ("ttext_value_at_timestamptz", "value"),
     ("tint_value_at_timestamptz", "value"),
@@ -99,7 +103,7 @@ result_parameters = {
 # List of output function parameters in tuples of (function, parameter).
 # All parameters named result are assumed to be output parameters, and it is
 # not necessary to list them here.
-output_parameters = {
+output_parameters: set[tuple[str, str]] = {
     ("temporal_time_split", "time_bins"),
     ("temporal_time_split", "count"),
     ("tint_value_split", "bins"),
@@ -125,7 +129,7 @@ output_parameters = {
 }
 
 # List of nullable function parameters in tuples of (function, parameter)
-nullable_parameters = {
+nullable_parameters: set[tuple[str, str]] = {
     ("meos_initialize", "tz_str"),
     ("meos_set_intervalstyle", "extra"),
     ("temporal_append_tinstant", "maxt"),
@@ -203,15 +207,26 @@ def is_output_parameter(function: str, parameter: Parameter) -> bool:
 
 
 def check_modifiers(functions: list[str]) -> None:
+    for func in function_overrides:
+        if func not in functions:
+            print(f"Override defined for non-existent function {func}")
+
     for func in function_modifiers:
         if func not in functions:
             print(f"Modifier defined for non-existent function {func}")
+
     for func, param in result_parameters:
         if func not in functions:
-            print(f"Result parameter defined for non-existent function {func} ({param})")
+            print(
+                f"Result parameter defined for non-existent function {func} ({param})"
+            )
+
     for func, param in output_parameters:
         if func not in functions:
-            print(f"Output parameter defined for non-existent function {func} ({param})")
+            print(
+                f"Output parameter defined for non-existent function {func} ({param})"
+            )
+
     for func, param in nullable_parameters:
         if func not in functions:
             print(f"Nullable Parameter defined for non-existent function {func} ({param})")
@@ -268,7 +283,10 @@ def build_pymeos_functions(header_path="builder/meos.h"):
             return_type = get_return_type(inner_return_type)
             inner_params = named["params"]
             params = get_params(function, inner_params)
-            function_string = build_function_string(function, return_type, params)
+            if function in function_overrides:
+                function_string = function_overrides[function]
+            else:
+                function_string = build_function_string(function, return_type, params)
             file.write(function_string)
             file.write("\n\n\n")
 
@@ -432,11 +450,6 @@ def build_function_string(function_name: str, return_type: ReturnType, parameter
     # conversion (where the C type gives extra information while being interoperable),
     # or the function is void
     function_return_type = f"Annotated[{return_type.return_type}, '{return_type.ctype}']"
-    # function_return_type = (
-    #     return_type.return_type
-    #     if return_type.conversion is not None or return_type.return_type == "None"
-    #     else f"'{return_type.ctype}'"
-    # )
     # If there is a result param
     if result_param is not None:
         # Create the CFFI object to hold it
