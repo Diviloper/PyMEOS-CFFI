@@ -18,8 +18,10 @@ def array_parameter_modifier(
         match = next(re.finditer(type_regex, function))
         whole_type = match.group(1)
         base_type = " ".join(whole_type.split(" ")[:-1])
+        if base_type.startswith("const "):
+            base_type = base_type[6:]
         function = function.replace(
-            match.group(0), f"{list_name}: 'List[{base_type}]'"
+            match.group(0), f"{list_name}: List['{base_type}']"
         ).replace(
             f"_ffi.cast('{whole_type}', {list_name})",
             f"_ffi.new('{base_type} []', {list_name})",
@@ -40,44 +42,8 @@ def textset_make_modifier(function: str) -> str:
     )
 
 
-def meos_initialize_modifier(_: str) -> str:
-    return """def meos_initialize(tz_str: "Optional[str]") -> None:
-    if "PROJ_DATA" not in os.environ and "PROJ_LIB" not in os.environ:
-        proj_dir = os.path.join(os.path.dirname(__file__), "proj_data")
-        if os.path.exists(proj_dir):
-            # Assume we are in a wheel and the PROJ data is in the package
-            os.environ["PROJ_DATA"] = proj_dir
-            os.environ["PROJ_LIB"] = proj_dir
-    
-    tz_str_converted = tz_str.encode('utf-8') if tz_str is not None else _ffi.NULL
-    _lib.meos_initialize(tz_str_converted, _lib.py_error_handler)"""
-
-
 def remove_error_check_modifier(function: str) -> str:
     return function.replace("    _check_error()\n", "")
-
-
-def cstring2text_modifier(_: str) -> str:
-    return """def cstring2text(cstring: str) -> 'text *':
-    cstring_converted = cstring.encode('utf-8')
-    result = _lib.cstring2text(cstring_converted)
-    return result"""
-
-
-def text2cstring_modifier(_: str) -> str:
-    return """def text2cstring(textptr: 'text *') -> str:
-    result = _lib.text2cstring(textptr)
-    result = _ffi.string(result).decode('utf-8')
-    return result"""
-
-
-def from_wkb_modifier(function: str, return_type: str) -> Callable[[str], str]:
-    return (
-        lambda _: f"""def {function}(wkb: bytes) -> '{return_type} *':
-    wkb_converted = _ffi.new('uint8_t []', wkb)
-    result = _lib.{function}(wkb_converted, len(wkb))
-    return result if result != _ffi.NULL else None"""
-    )
 
 
 def as_wkb_modifier(function: str) -> str:
