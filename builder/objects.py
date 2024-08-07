@@ -1,19 +1,13 @@
+from dataclasses import dataclass
 from typing import Callable, Dict, Optional
 
 
+@dataclass
 class Conversion:
-    def __init__(
-        self,
-        c_type: str,
-        p_type: str,
-        p_to_c: Optional[Callable[[str], str]],
-        c_to_p: Optional[Callable[[str], str]],
-    ) -> None:
-        super().__init__()
-        self.c_type = c_type
-        self.p_type = p_type
-        self.p_to_c = p_to_c
-        self.c_to_p = c_to_p
+    c_type: str
+    p_type: str
+    p_to_c: Optional[Callable[[str], str]]
+    c_to_p: Optional[Callable[[str], str]]
 
 
 def expand_conversions(
