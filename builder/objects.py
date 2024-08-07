@@ -1,19 +1,13 @@
+from dataclasses import dataclass
 from collections.abc import Callable
 
 
+@dataclass
 class Conversion:
-    def __init__(
-        self,
-        c_type: str,
-        p_type: str,
-        p_to_c: Callable[[str], str] | None,
-        c_to_p: Callable[[str], str] | None,
-    ) -> None:
-        super().__init__()
-        self.c_type = c_type
-        self.p_type = p_type
-        self.p_to_c = p_to_c
-        self.c_to_p = c_to_p
+    c_type: str
+    p_type: str
+    p_to_c: Callable[[str], str] | None
+    c_to_p: Callable[[str], str] | None
 
 
 def expand_conversions(

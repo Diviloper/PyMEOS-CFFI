@@ -3,6 +3,7 @@ import sys
 
 from build_pymeos_functions_modifiers import *
 from build_pymeos_functions_overrides import *
+from builder.function import Function
 from objects import Conversion, conversion_map
 
 
@@ -283,10 +284,14 @@ def build_pymeos_functions(header_path="builder/meos.h"):
             return_type = get_return_type(inner_return_type)
             inner_params = named["params"]
             params = get_params(function, inner_params)
-            if function in function_overrides:
-                function_string = function_overrides[function]
-            else:
-                function_string = build_function_string(function, return_type, params)
+            func_object = Function.from_components(
+                function, inner_return_type, inner_params
+            )
+            function_string = func_object.get_function_text()
+            # if function in function_overrides:
+            #     function_string = function_overrides[function]
+            # else:
+            #     function_string = build_function_string(function, return_type, params)
             file.write(function_string)
             file.write("\n\n\n")
 
