@@ -34,9 +34,10 @@ license = { file = 'LICENSE' }
 
 requires-python = '>=3.8'
 dependencies = [
+    'lark',
     'cffi',
     'python-dateutil',
-    'shapely'
+    'shapely',
 ]
 
 [project.urls]
