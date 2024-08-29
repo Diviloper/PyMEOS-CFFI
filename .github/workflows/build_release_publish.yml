@@ -1,4 +1,4 @@
-name: Build PyMEOS CFFI
+name: Build PyMEOS CFFI and pul
 
 on:
   create:

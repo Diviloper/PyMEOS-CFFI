@@ -1,0 +1,82 @@
+name: Test PyMEOS CFFI on macOS
+
+on:
+  push:
+    branches: [ "master", "stable-[0-9]+.[0-9]+" ]
+  pull_request:
+    branches: [ "master", "stable-[0-9]+.[0-9]+" ]
+
+jobs:
+  checks:
+    name: Make checks
+    runs-on: ubuntu-latest
+
+    outputs:
+      branch: ${{ steps.get_branch.outputs.branch }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get branch name
+        id: get_branch
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw##*/}
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          echo "Branch is $branch."
+
+  test:
+    name: Test PyMEOS CFFI on Python ${{ matrix.python-version }}
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12", "3.13" ]
+        os: [ macos-13, macos-14 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get dependencies from homebrew (cache)
+        uses: tecolicom/actions-use-homebrew-tools@v1
+        with:
+          tools: cmake libpq proj json-c gsl geos
+
+      - name: Update brew
+        if: matrix.os == 'macos-13'
+        # Necessary to avoid issue with macOS runners. See
+        # https://github.com/actions/runner-images/issues/4020
+        run: |
+          brew reinstall python@3.12 || brew link --overwrite python@3.12
+          brew reinstall python@3.11 || brew link --overwrite python@3.11
+          brew update
+
+      - name: Install MEOS
+        run: |
+          git clone --depth 1 --branch ${{ needs.checks.outputs.branch }} https://github.com/MobilityDB/MobilityDB
+          mkdir MobilityDB/build
+          cd MobilityDB/build
+          cmake .. -DMEOS=on
+          make -j
+          sudo make install
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install PyMEOS-CFFI
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Run PyMEOS-CFFI check
+        run: |
+          python -c "import pymeos_cffi; print(pymeos_cffi.__version__);"
+          python -c "from pymeos_cffi import *; meos_initialize(None); print(tpoint_out(tgeompoint_in('POINT(2 3)@2000-01-01'), 3)); meos_finalize();"
