@@ -37,6 +37,10 @@ jobs:
       matrix:
         python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
         os: [ macos-13, macos-14 ]
+        include:
+          - ld_prefix: "/usr/local"
+          - os: macos-14
+            ld_prefix: "/opt/homebrew"
 
     steps:
       - name: Checkout
