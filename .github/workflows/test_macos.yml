@@ -29,7 +29,7 @@ jobs:
           echo "Branch is $branch."
 
   test:
-    name: Test PyMEOS CFFI on Python ${{ matrix.python-version }}
+    name: Test PyMEOS CFFI on ${{ matrix.os }} with Python ${{ matrix.python-version }}
     needs: checks
     runs-on: ${{ matrix.os }}
     strategy:
