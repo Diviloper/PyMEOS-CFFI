@@ -2,7 +2,14 @@ import os
 
 from cffi import FFI
 
-from builder.meos_configs import header_files
+header_files = [
+    "meos.h",
+    "meos_catalog.h",
+    "meos_geo.h",
+    "meos_internal.h",
+    "meos_internal_geo.h",
+    "meos_npoint.h",
+]
 
 ffibuilder = FFI()
 
@@ -20,7 +27,6 @@ def get_library_dirs():
 def get_include_dirs():
     paths = ["/usr/local/include", "/opt/homebrew/include"]
     return [path for path in paths if os.path.exists(path)]
-
 
 
 ffibuilder.set_source(
