@@ -2,6 +2,8 @@ import os
 
 from cffi import FFI
 
+from builder.meos_configs import header_files
+
 ffibuilder = FFI()
 
 with open(os.path.join(os.path.dirname(__file__), "meos.h"), "r") as f:
@@ -20,9 +22,10 @@ def get_include_dirs():
     return [path for path in paths if os.path.exists(path)]
 
 
+
 ffibuilder.set_source(
     "_meos_cffi",
-    '#include "meos.h"\n#include "meos_catalog.h"\n#include "meos_internal.h"',
+    "\n".join(f'#include "{h}"' for h in header_files),
     libraries=["meos"],
     library_dirs=get_library_dirs(),
     include_dirs=get_include_dirs(),
