@@ -22,7 +22,7 @@ def get_include_dirs():
 
 ffibuilder.set_source(
     "_meos_cffi",
-    '#include "meos.h"\n' '#include "meos_catalog.h"\n' '#include "meos_internal.h"',
+    '#include "meos.h"\n#include "meos_catalog.h"\n#include "meos_internal.h"',
     libraries=["meos"],
     library_dirs=get_library_dirs(),
     include_dirs=get_include_dirs(),
