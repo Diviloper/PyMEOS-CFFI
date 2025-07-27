@@ -227,9 +227,19 @@ def check_modifiers(functions: List[str]) -> None:
             )
 
 
+def remove_c_comments(code: str) -> str:
+    code = re.sub(r"/\*.*?\*/", "", code, flags=re.DOTALL)
+    code = re.sub(r"//.*?$", "", code, flags=re.MULTILINE)
+    return code
+
+
 def build_pymeos_functions(header_path="builder/meos.h"):
     with open(header_path) as f:
         content = f.read()
+
+    # Remove C comments from the header file
+    content = remove_c_comments(content)
+
     # Regex lines:
     # 1st line: Match beginning of function with optional "extern", "static" and
     #           "inline"
@@ -240,14 +250,12 @@ def build_pymeos_functions(header_path="builder/meos.h"):
     #           spaces and asterisks between parenthesis and end with a semicolon.
     #           (Parameter decomposition will be performed later)
     f_regex = (
-        r"(?:extern )?(?:static )?(?:inline )?"
+        r"(?<!/\* )(?:extern )?(?:static )?(?:inline )?"
         r"(?P<returnType>(?:const )?\w+(?: \*+)?)"
         r"\s*(?P<function>\w+)"
         r"\((?P<params>[\w\s,\*]*)\);"
     )
-    matches = re.finditer(
-        f_regex, "".join(content.splitlines()), flags=re.RegexFlag.MULTILINE
-    )
+    matches = re.finditer(f_regex, "".join(content.splitlines()))
 
     file_path = os.path.dirname(__file__)
     template_path = os.path.join(file_path, "templates/functions.py")

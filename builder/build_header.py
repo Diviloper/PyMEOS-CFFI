@@ -5,6 +5,8 @@ import subprocess
 import sys
 from typing import Set, Tuple, Match
 
+from builder.meos_configs import header_files
+
 
 def get_defined_functions(library_path):
     result = subprocess.check_output(["nm", "-g", library_path])
@@ -63,7 +65,6 @@ def remove_repeated_functions(
 
 
 def build_header_file(include_dir, so_path=None, destination_path="builder/meos.h"):
-    files = ["meos.h", "meos_catalog.h", "meos_internal.h"]
     global_content = """
 typedef struct
   {
@@ -89,7 +90,7 @@ typedef struct pj_ctx PJ_CONTEXT;
 """
 
     functions = set()
-    for file_name in files:
+    for file_name in header_files:
         file_path = os.path.join(include_dir, file_name)
         with open(file_path, "r") as f:
             content = f.read()
