@@ -48,7 +48,7 @@ def meos_initialize_modifier(_: str) -> str:
             # Assume we are in a wheel and the PROJ data is in the package
             os.environ["PROJ_DATA"] = proj_dir
             os.environ["PROJ_LIB"] = proj_dir
-    
+    _lib.meos_set_spatial_ref_sys_csv(os.path.join(os.path.dirname(__file__), "meos_data", "spatial_ref_sys.csv").encode('utf-8'))
     _lib.meos_initialize()
     tz_str_converted = tz_str.encode('utf-8') if tz_str is not None else _ffi.NULL
     _lib.meos_initialize_timezone(tz_str_converted)

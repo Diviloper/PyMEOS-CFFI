@@ -28,6 +28,18 @@ if os.environ.get("PACKAGE_DATA"):
 else:
     print("Not copying PROJ data to package data")
 
+# Copy MEOS spatial reference table (spatial_ref_sys.csv)
+print("Copying MEOS spatial reference table to package data")
+spatial_ref_sys_path = os.environ.get(
+    "MEOS_SPATIAL_REF_SYS_PATH", "/usr/local/share/spatial_ref_sys.csv"
+)
+shutil.rmtree("pymeos_cffi/meos_data", ignore_errors=True)
+os.makedirs("pymeos_cffi/meos_data", exist_ok=True)
+shutil.copy(
+    spatial_ref_sys_path,
+    "pymeos_cffi/meos_data/spatial_ref_sys.csv",
+)
+package_data.append("meos_data/*")
 
 setup(
     packages=["pymeos_cffi"],
