@@ -50,7 +50,12 @@ def meos_initialize_modifier(_: str) -> str:
             os.environ["PROJ_LIB"] = proj_dir
     _lib.meos_set_spatial_ref_sys_csv(os.path.join(os.path.dirname(__file__), "meos_data", "spatial_ref_sys.csv").encode('utf-8'))
     _lib.meos_initialize()
-    tz_str_converted = tz_str.encode('utf-8') if tz_str is not None else _ffi.NULL
+    
+    # For some bizarre reason, if the timezone is initialized with None, it causes crashes when printing
+    # the timestamps belonging to TGeogPoints. This doesn't happen in a C program, so the issue is likely
+    # in the Python bindings.
+    # Therefore, we initialize the timezone with the system's default timezone if None is passed.
+    tz_str_converted = tz_str.encode('utf-8') if tz_str is not None else time.tzname[0].encode('utf-8')
     _lib.meos_initialize_timezone(tz_str_converted)
     _lib.meos_initialize_error_handler(_lib.py_error_handler)"""
 
