@@ -29,7 +29,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
 
-          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha ]]; then
+          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+a[0-9]+ ]]; then
             echo "Releasing an alpha version."
             echo "is_alpha=true" >> "$GITHUB_OUTPUT"
           else
@@ -41,7 +41,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
 
-          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta ]]; then
+          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+b[0-9]+ ]]; then
             echo "Releasing a beta version."
             echo "is_beta=true" >> "$GITHUB_OUTPUT"
           else
@@ -53,7 +53,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
 
-          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc ]]; then
+          if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+ ]]; then
             echo "Releasing an rc version."
             echo "is_rc=true" >> "$GITHUB_OUTPUT"
           else
