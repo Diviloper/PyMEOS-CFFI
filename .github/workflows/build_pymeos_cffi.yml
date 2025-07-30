@@ -232,7 +232,7 @@ jobs:
             git clone --depth 1 --branch ${{ needs.checks.outputs.branch }} https://github.com/MobilityDB/MobilityDB &&
             mkdir MobilityDB/build &&
             cd MobilityDB/build &&
-            cmake .. -DMEOS=on -DGEOS_INCLUDE_DIR=/usr/geos39/include/ -DGEOS_LIBRARY=/usr/geos39/lib64/libgeos_c.so -DGEOS_CONFIG=/usr/geos39/bin/geos-config -DPROJ_INCLUDE_DIRS=/usr/proj81/include/ -DPROJ_LIBRARIES=/usr/proj81/lib/libproj.so &&
+            cmake .. -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DGEOS_INCLUDE_DIR=/usr/geos39/include/ -DGEOS_LIBRARY=/usr/geos39/lib64/libgeos_c.so -DGEOS_CONFIG=/usr/geos39/bin/geos-config -DPROJ_INCLUDE_DIRS=/usr/proj81/include/ -DPROJ_LIBRARIES=/usr/proj81/lib/libproj.so &&
             make -j &&
             make install
 
@@ -253,8 +253,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12", "3.13" ]
-#        os: [ ubuntu-latest, macos-13, macos-14 ]
-        os: [ ubuntu-latest, macos-14 ]
+        os: [ ubuntu-latest, macos-13, macos-14 ]
+#        os: [ ubuntu-latest, macos-14 ]
 
     steps:
       - name: Checkout
