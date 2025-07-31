@@ -214,7 +214,7 @@ jobs:
           # Disable PyPy builds
           # Disable builds on musllinux
           # Disable builds in linux architectures other than x86_64
-          CIBW_SKIP: "pp* *musllinux*"
+          CIBW_SKIP: "*musllinux*"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ENVIRONMENT_PASS_LINUX: PACKAGE_DATA LD_LIBRARY_PATH PROJ_DATA C_INCLUDE_PATH
           CIBW_ENVIRONMENT_MACOS: >
@@ -223,17 +223,11 @@ jobs:
             dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm &&
             dnf -qy module disable postgresql &&
             dnf -y update &&
-            dnf -y install gcc gcc-c++ make cmake postgresql17-devel proj81-devel geos39-devel gsl-devel &&
-            git clone --branch json-c-0.17 --depth 1 https://github.com/json-c/json-c &&
-            mkdir json-c-build &&
-            cd json-c-build &&
-            cmake ../json-c &&
-            make &&
-            make install &&
+            dnf -y install gcc gcc-c++ make cmake postgresql17-devel proj81-devel geos39-devel gsl-devel json-c-devel &&
             git clone --depth 1 --branch ${{ needs.checks.outputs.branch }} https://github.com/MobilityDB/MobilityDB &&
             mkdir MobilityDB/build &&
             cd MobilityDB/build &&
-            cmake .. -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DGEOS_INCLUDE_DIR=/usr/geos39/include/ -DGEOS_LIBRARY=/usr/geos39/lib64/libgeos_c.so -DGEOS_CONFIG=/usr/geos39/bin/geos-config -DPROJ_INCLUDE_DIRS=/usr/proj81/include/ -DPROJ_LIBRARIES=/usr/proj81/lib/libproj.so &&
+            cmake .. -DMEOS=on -DGEOS_INCLUDE_DIR=/usr/geos39/include/ -DGEOS_LIBRARY=/usr/geos39/lib64/libgeos_c.so -DGEOS_CONFIG=/usr/geos39/bin/geos-config -DPROJ_INCLUDE_DIRS=/usr/proj81/include/ -DPROJ_LIBRARIES=/usr/proj81/lib/libproj.so &&
             make -j &&
             make install
 
