@@ -211,10 +211,9 @@ jobs:
           export PACKAGE_DATA=1
           python -m cibuildwheel --output-dir wheelhouse
         env:
-          # Disable PyPy builds
           # Disable builds on musllinux
+          CIBW_SKIP: "*musllinux* cp314*"
           # Disable builds in linux architectures other than x86_64
-          CIBW_SKIP: "*musllinux*"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ENVIRONMENT_PASS_LINUX: PACKAGE_DATA LD_LIBRARY_PATH PROJ_DATA C_INCLUDE_PATH
           CIBW_ENVIRONMENT_MACOS: >
