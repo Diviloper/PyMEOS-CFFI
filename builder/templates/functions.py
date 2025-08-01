@@ -11,6 +11,7 @@ from dateutil.parser import parse
 from shapely import wkt, get_srid, set_srid
 from shapely.geometry.base import BaseGeometry
 
+from .enums import InterpolationType
 from .errors import report_meos_exception
 
 _ffi = _meos_cffi.ffi

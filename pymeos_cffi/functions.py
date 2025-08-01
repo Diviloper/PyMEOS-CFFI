@@ -11,6 +11,7 @@ from dateutil.parser import parse
 from shapely import wkt, get_srid, set_srid
 from shapely.geometry.base import BaseGeometry
 
+from .enums import InterpolationType
 from .errors import report_meos_exception
 
 _ffi = _meos_cffi.ffi
@@ -6237,21 +6238,19 @@ def tfloatseq_from_base_tstzset(d: float, s: "const Set *") -> "TSequence *":
 
 
 def tfloatseq_from_base_tstzspan(
-    d: float, s: "const Span *", interp: "interpType"
+    d: float, s: "const Span *", interp: InterpolationType
 ) -> "TSequence *":
     s_converted = _ffi.cast("const Span *", s)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tfloatseq_from_base_tstzspan(d, s_converted, interp_converted)
+    result = _lib.tfloatseq_from_base_tstzspan(d, s_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def tfloatseqset_from_base_tstzspanset(
-    d: float, ss: "const SpanSet *", interp: "interpType"
+    d: float, ss: "const SpanSet *", interp: InterpolationType
 ) -> "TSequenceSet *":
     ss_converted = _ffi.cast("const SpanSet *", ss)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tfloatseqset_from_base_tstzspanset(d, ss_converted, interp_converted)
+    result = _lib.tfloatseqset_from_base_tstzspanset(d, ss_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -6296,13 +6295,12 @@ def tsequence_make(
     count: int,
     lower_inc: bool,
     upper_inc: bool,
-    interp: "interpType",
+    interp: InterpolationType,
     normalize: bool,
 ) -> "TSequence *":
     instants_converted = [_ffi.cast("const TInstant *", x) for x in instants]
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tsequence_make(
-        instants_converted, count, lower_inc, upper_inc, interp_converted, normalize
+        instants_converted, count, lower_inc, upper_inc, interp, normalize
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -6319,17 +6317,16 @@ def tsequenceset_make(
 
 def tsequenceset_make_gaps(
     instants: "const TInstant **",
-    interp: "interpType",
+    interp: InterpolationType,
     maxt: "Optional['const Interval *']",
     maxdist: float,
 ) -> "TSequenceSet *":
     instants_converted = [_ffi.cast("const TInstant *", x) for x in instants]
-    interp_converted = _ffi.cast("interpType", interp)
     maxt_converted = (
         _ffi.cast("const Interval *", maxt) if maxt is not None else _ffi.NULL
     )
     result = _lib.tsequenceset_make_gaps(
-        instants_converted, len(instants), interp_converted, maxt_converted, maxdist
+        instants_converted, len(instants), interp, maxt_converted, maxdist
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -6896,10 +6893,11 @@ def temporal_scale_time(
     return result if result != _ffi.NULL else None
 
 
-def temporal_set_interp(temp: "const Temporal *", interp: "interpType") -> "Temporal *":
+def temporal_set_interp(
+    temp: "const Temporal *", interp: InterpolationType
+) -> "Temporal *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.temporal_set_interp(temp_converted, interp_converted)
+    result = _lib.temporal_set_interp(temp_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -6941,21 +6939,19 @@ def temporal_to_tinstant(temp: "const Temporal *") -> "TInstant *":
 
 
 def temporal_to_tsequence(
-    temp: "const Temporal *", interp: "interpType"
+    temp: "const Temporal *", interp: InterpolationType
 ) -> "TSequence *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.temporal_to_tsequence(temp_converted, interp_converted)
+    result = _lib.temporal_to_tsequence(temp_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def temporal_to_tsequenceset(
-    temp: "const Temporal *", interp: "interpType"
+    temp: "const Temporal *", interp: InterpolationType
 ) -> "TSequenceSet *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.temporal_to_tsequenceset(temp_converted, interp_converted)
+    result = _lib.temporal_to_tsequenceset(temp_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -7037,24 +7033,18 @@ def tint_shift_value(temp: "const Temporal *", shift: int) -> "Temporal *":
 def temporal_append_tinstant(
     temp: "Temporal *",
     inst: "const TInstant *",
-    interp: "interpType",
+    interp: InterpolationType,
     maxdist: float,
     maxt: "Optional['const Interval *']",
     expand: bool,
 ) -> "Temporal *":
     temp_converted = _ffi.cast("Temporal *", temp)
     inst_converted = _ffi.cast("const TInstant *", inst)
-    interp_converted = _ffi.cast("interpType", interp)
     maxt_converted = (
         _ffi.cast("const Interval *", maxt) if maxt is not None else _ffi.NULL
     )
     result = _lib.temporal_append_tinstant(
-        temp_converted,
-        inst_converted,
-        interp_converted,
-        maxdist,
-        maxt_converted,
-        expand,
+        temp_converted, inst_converted, interp, maxdist, maxt_converted, expand
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -9976,14 +9966,13 @@ def temporal_tsample(
     temp: "const Temporal *",
     duration: "const Interval *",
     origin: int,
-    interp: "interpType",
+    interp: InterpolationType,
 ) -> "Temporal *":
     temp_converted = _ffi.cast("const Temporal *", temp)
     duration_converted = _ffi.cast("const Interval *", duration)
     origin_converted = _ffi.cast("TimestampTz", origin)
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.temporal_tsample(
-        temp_converted, duration_converted, origin_converted, interp_converted
+        temp_converted, duration_converted, origin_converted, interp
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -10387,9 +10376,8 @@ def meosoper_from_string(name: str) -> "meosOper":
     return result if result != _ffi.NULL else None
 
 
-def interptype_name(interp: "interpType") -> str:
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.interptype_name(interp_converted)
+def interptype_name(interp: InterpolationType) -> str:
+    result = _lib.interptype_name(interp)
     _check_error()
     result = _ffi.string(result).decode("utf-8")
     return result if result != _ffi.NULL else None
@@ -12425,27 +12413,21 @@ def tgeoseq_from_base_tstzset(
 
 
 def tgeoseq_from_base_tstzspan(
-    gs: "const GSERIALIZED *", s: "const Span *", interp: "interpType"
+    gs: "const GSERIALIZED *", s: "const Span *", interp: InterpolationType
 ) -> "TSequence *":
     gs_converted = _ffi.cast("const GSERIALIZED *", gs)
     s_converted = _ffi.cast("const Span *", s)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeoseq_from_base_tstzspan(
-        gs_converted, s_converted, interp_converted
-    )
+    result = _lib.tgeoseq_from_base_tstzspan(gs_converted, s_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def tgeoseqset_from_base_tstzspanset(
-    gs: "const GSERIALIZED *", ss: "const SpanSet *", interp: "interpType"
+    gs: "const GSERIALIZED *", ss: "const SpanSet *", interp: InterpolationType
 ) -> "TSequenceSet *":
     gs_converted = _ffi.cast("const GSERIALIZED *", gs)
     ss_converted = _ffi.cast("const SpanSet *", ss)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeoseqset_from_base_tstzspanset(
-        gs_converted, ss_converted, interp_converted
-    )
+    result = _lib.tgeoseqset_from_base_tstzspanset(gs_converted, ss_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -12479,14 +12461,11 @@ def tpointseq_from_base_tstzset(
 
 
 def tpointseq_from_base_tstzspan(
-    gs: "const GSERIALIZED *", s: "const Span *", interp: "interpType"
+    gs: "const GSERIALIZED *", s: "const Span *", interp: InterpolationType
 ) -> "TSequence *":
     gs_converted = _ffi.cast("const GSERIALIZED *", gs)
     s_converted = _ffi.cast("const Span *", s)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tpointseq_from_base_tstzspan(
-        gs_converted, s_converted, interp_converted
-    )
+    result = _lib.tpointseq_from_base_tstzspan(gs_converted, s_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -12501,7 +12480,7 @@ def tpointseq_make_coords(
     geodetic: bool,
     lower_inc: bool,
     upper_inc: bool,
-    interp: "interpType",
+    interp: InterpolationType,
     normalize: bool,
 ) -> "TSequence *":
     xcoords_converted = _ffi.cast("const double *", xcoords)
@@ -12509,7 +12488,6 @@ def tpointseq_make_coords(
     zcoords_converted = _ffi.cast("const double *", zcoords)
     times_converted = _ffi.cast("const TimestampTz *", times)
     srid_converted = _ffi.cast("int32", srid)
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tpointseq_make_coords(
         xcoords_converted,
         ycoords_converted,
@@ -12520,7 +12498,7 @@ def tpointseq_make_coords(
         geodetic,
         lower_inc,
         upper_inc,
-        interp_converted,
+        interp,
         normalize,
     )
     _check_error()
@@ -12528,14 +12506,11 @@ def tpointseq_make_coords(
 
 
 def tpointseqset_from_base_tstzspanset(
-    gs: "const GSERIALIZED *", ss: "const SpanSet *", interp: "interpType"
+    gs: "const GSERIALIZED *", ss: "const SpanSet *", interp: InterpolationType
 ) -> "TSequenceSet *":
     gs_converted = _ffi.cast("const GSERIALIZED *", gs)
     ss_converted = _ffi.cast("const SpanSet *", ss)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tpointseqset_from_base_tstzspanset(
-        gs_converted, ss_converted, interp_converted
-    )
+    result = _lib.tpointseqset_from_base_tstzspanset(gs_converted, ss_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15708,10 +15683,9 @@ def tboolinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tboolseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tboolseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tboolseq_in(string_converted, interp_converted)
+    result = _lib.tboolseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15753,10 +15727,9 @@ def tfloatinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tfloatseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tfloatseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tfloatseq_in(string_converted, interp_converted)
+    result = _lib.tfloatseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15791,10 +15764,9 @@ def tintinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tintseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tintseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tintseq_in(string_converted, interp_converted)
+    result = _lib.tintseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15807,12 +15779,11 @@ def tintseqset_in(string: str) -> "TSequenceSet *":
 
 
 def tsequence_in(
-    string: str, temptype: "meosType", interp: "interpType"
+    string: str, temptype: "meosType", interp: InterpolationType
 ) -> "TSequence *":
     string_converted = string.encode("utf-8")
     temptype_converted = _ffi.cast("meosType", temptype)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tsequence_in(string_converted, temptype_converted, interp_converted)
+    result = _lib.tsequence_in(string_converted, temptype_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15826,14 +15797,11 @@ def tsequence_out(seq: "const TSequence *", maxdd: int) -> str:
 
 
 def tsequenceset_in(
-    string: str, temptype: "meosType", interp: "interpType"
+    string: str, temptype: "meosType", interp: InterpolationType
 ) -> "TSequenceSet *":
     string_converted = string.encode("utf-8")
     temptype_converted = _ffi.cast("meosType", temptype)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tsequenceset_in(
-        string_converted, temptype_converted, interp_converted
-    )
+    result = _lib.tsequenceset_in(string_converted, temptype_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15853,10 +15821,9 @@ def ttextinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def ttextseq_in(string: str, interp: "interpType") -> "TSequence *":
+def ttextseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.ttextseq_in(string_converted, interp_converted)
+    result = _lib.ttextseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -15948,14 +15915,13 @@ def tsequence_from_base_tstzset(
 
 
 def tsequence_from_base_tstzspan(
-    value: "Datum", temptype: "meosType", s: "const Span *", interp: "interpType"
+    value: "Datum", temptype: "meosType", s: "const Span *", interp: InterpolationType
 ) -> "TSequence *":
     value_converted = _ffi.cast("Datum", value)
     temptype_converted = _ffi.cast("meosType", temptype)
     s_converted = _ffi.cast("const Span *", s)
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tsequence_from_base_tstzspan(
-        value_converted, temptype_converted, s_converted, interp_converted
+        value_converted, temptype_converted, s_converted, interp
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -15967,19 +15933,12 @@ def tsequence_make_exp(
     maxcount: int,
     lower_inc: bool,
     upper_inc: bool,
-    interp: "interpType",
+    interp: InterpolationType,
     normalize: bool,
 ) -> "TSequence *":
     instants_converted = [_ffi.cast("const TInstant *", x) for x in instants]
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tsequence_make_exp(
-        instants_converted,
-        count,
-        maxcount,
-        lower_inc,
-        upper_inc,
-        interp_converted,
-        normalize,
+        instants_converted, count, maxcount, lower_inc, upper_inc, interp, normalize
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -15990,13 +15949,12 @@ def tsequence_make_free(
     count: int,
     lower_inc: bool,
     upper_inc: bool,
-    interp: "interpType",
+    interp: InterpolationType,
     normalize: bool,
 ) -> "TSequence *":
     instants_converted = [_ffi.cast("TInstant *", x) for x in instants]
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tsequence_make_free(
-        instants_converted, count, lower_inc, upper_inc, interp_converted, normalize
+        instants_converted, count, lower_inc, upper_inc, interp, normalize
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -16032,14 +15990,16 @@ def tsequenceset_from_base_temp(
 
 
 def tsequenceset_from_base_tstzspanset(
-    value: "Datum", temptype: "meosType", ss: "const SpanSet *", interp: "interpType"
+    value: "Datum",
+    temptype: "meosType",
+    ss: "const SpanSet *",
+    interp: InterpolationType,
 ) -> "TSequenceSet *":
     value_converted = _ffi.cast("Datum", value)
     temptype_converted = _ffi.cast("meosType", temptype)
     ss_converted = _ffi.cast("const SpanSet *", ss)
-    interp_converted = _ffi.cast("interpType", interp)
     result = _lib.tsequenceset_from_base_tstzspanset(
-        value_converted, temptype_converted, ss_converted, interp_converted
+        value_converted, temptype_converted, ss_converted, interp
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -16608,20 +16568,20 @@ def temporal_restart(temp: "Temporal *", count: int) -> None:
     _check_error()
 
 
-def temporal_tsequence(temp: "const Temporal *", interp: "interpType") -> "TSequence *":
+def temporal_tsequence(
+    temp: "const Temporal *", interp: InterpolationType
+) -> "TSequence *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.temporal_tsequence(temp_converted, interp_converted)
+    result = _lib.temporal_tsequence(temp_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def temporal_tsequenceset(
-    temp: "const Temporal *", interp: "interpType"
+    temp: "const Temporal *", interp: InterpolationType
 ) -> "TSequenceSet *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.temporal_tsequenceset(temp_converted, interp_converted)
+    result = _lib.temporal_tsequenceset(temp_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -16637,31 +16597,28 @@ def tinstant_shift_time(
 
 
 def tinstant_to_tsequence(
-    inst: "const TInstant *", interp: "interpType"
+    inst: "const TInstant *", interp: InterpolationType
 ) -> "TSequence *":
     inst_converted = _ffi.cast("const TInstant *", inst)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tinstant_to_tsequence(inst_converted, interp_converted)
+    result = _lib.tinstant_to_tsequence(inst_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def tinstant_to_tsequence_free(
-    inst: "TInstant *", interp: "interpType"
+    inst: "TInstant *", interp: InterpolationType
 ) -> "TSequence *":
     inst_converted = _ffi.cast("TInstant *", inst)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tinstant_to_tsequence_free(inst_converted, interp_converted)
+    result = _lib.tinstant_to_tsequence_free(inst_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
 
 def tinstant_to_tsequenceset(
-    inst: "const TInstant *", interp: "interpType"
+    inst: "const TInstant *", interp: InterpolationType
 ) -> "TSequenceSet *":
     inst_converted = _ffi.cast("const TInstant *", inst)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tinstant_to_tsequenceset(inst_converted, interp_converted)
+    result = _lib.tinstant_to_tsequenceset(inst_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -16732,11 +16689,10 @@ def tsequence_restart(seq: "TSequence *", count: int) -> None:
 
 
 def tsequence_set_interp(
-    seq: "const TSequence *", interp: "interpType"
+    seq: "const TSequence *", interp: InterpolationType
 ) -> "Temporal *":
     seq_converted = _ffi.cast("const TSequence *", seq)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tsequence_set_interp(seq_converted, interp_converted)
+    result = _lib.tsequence_set_interp(seq_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -16785,11 +16741,10 @@ def tsequence_to_tsequenceset_free(seq: "TSequence *") -> "TSequenceSet *":
 
 
 def tsequence_to_tsequenceset_interp(
-    seq: "const TSequence *", interp: "interpType"
+    seq: "const TSequence *", interp: InterpolationType
 ) -> "TSequenceSet *":
     seq_converted = _ffi.cast("const TSequence *", seq)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tsequence_to_tsequenceset_interp(seq_converted, interp_converted)
+    result = _lib.tsequence_to_tsequenceset_interp(seq_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -16801,11 +16756,10 @@ def tsequenceset_restart(ss: "TSequenceSet *", count: int) -> None:
 
 
 def tsequenceset_set_interp(
-    ss: "const TSequenceSet *", interp: "interpType"
+    ss: "const TSequenceSet *", interp: InterpolationType
 ) -> "Temporal *":
     ss_converted = _ffi.cast("const TSequenceSet *", ss)
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tsequenceset_set_interp(ss_converted, interp_converted)
+    result = _lib.tsequenceset_set_interp(ss_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -17811,16 +17765,15 @@ def skiplist_free(list: "SkipList *") -> None:
 def temporal_app_tinst_transfn(
     state: "Temporal *",
     inst: "const TInstant *",
-    interp: "interpType",
+    interp: InterpolationType,
     maxdist: float,
     maxt: "const Interval *",
 ) -> "Temporal *":
     state_converted = _ffi.cast("Temporal *", state)
     inst_converted = _ffi.cast("const TInstant *", inst)
-    interp_converted = _ffi.cast("interpType", interp)
     maxt_converted = _ffi.cast("const Interval *", maxt)
     result = _lib.temporal_app_tinst_transfn(
-        state_converted, inst_converted, interp_converted, maxdist, maxt_converted
+        state_converted, inst_converted, interp, maxdist, maxt_converted
     )
     _check_error()
     return result if result != _ffi.NULL else None
@@ -18139,10 +18092,9 @@ def tgeogpointinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tgeogpointseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tgeogpointseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeogpointseq_in(string_converted, interp_converted)
+    result = _lib.tgeogpointseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -18161,10 +18113,9 @@ def tgeompointinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tgeompointseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tgeompointseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeompointseq_in(string_converted, interp_converted)
+    result = _lib.tgeompointseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -18183,10 +18134,9 @@ def tgeographyinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tgeographyseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tgeographyseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeographyseq_in(string_converted, interp_converted)
+    result = _lib.tgeographyseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -18205,10 +18155,9 @@ def tgeometryinst_in(string: str) -> "TInstant *":
     return result if result != _ffi.NULL else None
 
 
-def tgeometryseq_in(string: str, interp: "interpType") -> "TSequence *":
+def tgeometryseq_in(string: str, interp: InterpolationType) -> "TSequence *":
     string_converted = string.encode("utf-8")
-    interp_converted = _ffi.cast("interpType", interp)
-    result = _lib.tgeometryseq_in(string_converted, interp_converted)
+    result = _lib.tgeometryseq_in(string_converted, interp)
     _check_error()
     return result if result != _ffi.NULL else None
 

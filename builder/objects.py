@@ -111,4 +111,5 @@ conversion_map: Dict[str, Conversion] = {
     "TimeOffset": Conversion(
         "TimeOffset", "int", lambda p_obj: f"_ffi.cast('TimeOffset', {p_obj})", None
     ),
+    "interpType": Conversion("interpType", "InterpolationType", None, None),
 }
