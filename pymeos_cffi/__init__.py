@@ -832,6 +832,7 @@ __all__ = [
     "tfloat_to_tint",
     "tint_to_tfloat",
     "tnumber_to_span",
+    "tnumber_to_tbox",
     "tbool_end_value",
     "tbool_start_value",
     "tbool_value_at_timestamptz",

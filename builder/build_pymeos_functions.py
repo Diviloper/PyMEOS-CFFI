@@ -252,7 +252,7 @@ def build_pymeos_functions(header_path="builder/meos.h"):
     f_regex = (
         r"(?<!/\* )(?:extern )?(?:static )?(?:inline )?"
         r"(?P<returnType>(?:const )?\w+(?: \*+)?)"
-        r"\s*(?P<function>\w+)"
+        r"\s*(?P<function>\w+)\s*"
         r"\((?P<params>[\w\s,\*]*)\);"
     )
     matches = re.finditer(f_regex, "".join(content.splitlines()))
