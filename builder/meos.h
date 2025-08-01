@@ -62,17 +62,17 @@ typedef struct varlena
 typedef varlena text;
 typedef struct varlena bytea;
 
-/* extern DateADT date_in(const char *str);  (undefined) */
-/* extern char *date_out(DateADT d);  (undefined) */
-/* extern int interval_cmp(const Interval *interv1, const Interval *interv2);  (undefined) */
-/* extern Interval *interval_in(const char *str, int32 typmod);  (undefined) */
-/* extern char *interval_out(const Interval *interv);  (undefined) */
+extern DateADT date_in(const char *str);
+extern char *date_out(DateADT d);
+extern int interval_cmp(const Interval *interv1, const Interval *interv2);
+extern Interval *interval_in(const char *str, int32 typmod);
+extern char *interval_out(const Interval *interv);
 extern TimeADT time_in(const char *str, int32 typmod);
 extern char *time_out(TimeADT t);
-/* extern Timestamp timestamp_in(const char *str, int32 typmod);  (undefined) */
-/* extern char *timestamp_out(Timestamp t);  (undefined) */
-/* extern TimestampTz timestamptz_in(const char *str, int32 typmod);  (undefined) */
-/* extern char *timestamptz_out(TimestampTz t);  (undefined) */
+extern Timestamp timestamp_in(const char *str, int32 typmod);
+extern char *timestamp_out(Timestamp t);
+extern TimestampTz timestamptz_in(const char *str, int32 typmod);
+extern char *timestamptz_out(TimestampTz t);
 
  
 
@@ -2421,7 +2421,7 @@ extern Temporal *tpoint_get_y(const Temporal *temp);
 extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
-/* extern Temporal *tpoint_speed(const Temporal *temp);  (undefined) */
+extern Temporal *tpoint_speed(const Temporal *temp);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 

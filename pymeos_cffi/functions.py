@@ -144,6 +144,45 @@ def as_tsequenceset(temporal: "Temporal *") -> "TSequenceSet *":
 # -----------------------------------------------------------------------------
 # ----------------------End of manually-defined functions----------------------
 # -----------------------------------------------------------------------------
+def date_in(string: str) -> "DateADT":
+    string_converted = string.encode("utf-8")
+    result = _lib.date_in(string_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def date_out(d: "DateADT") -> str:
+    d_converted = _ffi.cast("DateADT", d)
+    result = _lib.date_out(d_converted)
+    _check_error()
+    result = _ffi.string(result).decode("utf-8")
+    return result if result != _ffi.NULL else None
+
+
+def interval_cmp(interv1: "const Interval *", interv2: "const Interval *") -> "int":
+    interv1_converted = _ffi.cast("const Interval *", interv1)
+    interv2_converted = _ffi.cast("const Interval *", interv2)
+    result = _lib.interval_cmp(interv1_converted, interv2_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def interval_in(string: str, typmod: int) -> "Interval *":
+    string_converted = string.encode("utf-8")
+    typmod_converted = _ffi.cast("int32", typmod)
+    result = _lib.interval_in(string_converted, typmod_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def interval_out(interv: "const Interval *") -> str:
+    interv_converted = _ffi.cast("const Interval *", interv)
+    result = _lib.interval_out(interv_converted)
+    _check_error()
+    result = _ffi.string(result).decode("utf-8")
+    return result if result != _ffi.NULL else None
+
+
 def time_in(string: str, typmod: int) -> "TimeADT":
     string_converted = string.encode("utf-8")
     typmod_converted = _ffi.cast("int32", typmod)
@@ -155,6 +194,38 @@ def time_in(string: str, typmod: int) -> "TimeADT":
 def time_out(t: "TimeADT") -> str:
     t_converted = _ffi.cast("TimeADT", t)
     result = _lib.time_out(t_converted)
+    _check_error()
+    result = _ffi.string(result).decode("utf-8")
+    return result if result != _ffi.NULL else None
+
+
+def timestamp_in(string: str, typmod: int) -> "Timestamp":
+    string_converted = string.encode("utf-8")
+    typmod_converted = _ffi.cast("int32", typmod)
+    result = _lib.timestamp_in(string_converted, typmod_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def timestamp_out(t: int) -> str:
+    t_converted = _ffi.cast("Timestamp", t)
+    result = _lib.timestamp_out(t_converted)
+    _check_error()
+    result = _ffi.string(result).decode("utf-8")
+    return result if result != _ffi.NULL else None
+
+
+def timestamptz_in(string: str, typmod: int) -> "TimestampTz":
+    string_converted = string.encode("utf-8")
+    typmod_converted = _ffi.cast("int32", typmod)
+    result = _lib.timestamptz_in(string_converted, typmod_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def timestamptz_out(t: int) -> str:
+    t_converted = _ffi.cast("TimestampTz", t)
+    result = _lib.timestamptz_out(t_converted)
     _check_error()
     result = _ffi.string(result).decode("utf-8")
     return result if result != _ffi.NULL else None
@@ -12653,16 +12724,18 @@ def tgeo_traversed_area(temp: "const Temporal *") -> "GSERIALIZED *":
 
 
 def tgeo_value_at_timestamptz(
-    temp: "const Temporal *", t: int, strict: bool, value: "GSERIALIZED **"
-) -> "bool":
+    temp: "const Temporal *", t: int, strict: bool
+) -> "GSERIALIZED **":
     temp_converted = _ffi.cast("const Temporal *", temp)
     t_converted = _ffi.cast("TimestampTz", t)
-    value_converted = [_ffi.cast("GSERIALIZED *", x) for x in value]
+    out_result = _ffi.new("GSERIALIZED **")
     result = _lib.tgeo_value_at_timestamptz(
-        temp_converted, t_converted, strict, value_converted
+        temp_converted, t_converted, strict, out_result
     )
     _check_error()
-    return result if result != _ffi.NULL else None
+    if result:
+        return out_result if out_result != _ffi.NULL else None
+    return None
 
 
 def tgeo_value_n(temp: "const Temporal *", n: int) -> "GSERIALIZED **":
@@ -12745,6 +12818,13 @@ def tpoint_is_simple(temp: "const Temporal *") -> "bool":
 def tpoint_length(temp: "const Temporal *") -> "double":
     temp_converted = _ffi.cast("const Temporal *", temp)
     result = _lib.tpoint_length(temp_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
+def tpoint_speed(temp: "const Temporal *") -> "Temporal *":
+    temp_converted = _ffi.cast("const Temporal *", temp)
+    result = _lib.tpoint_speed(temp_converted)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -14215,8 +14295,10 @@ def tpoint_tcentroid_transfn(state: "SkipList *", temp: "Temporal *") -> "SkipLi
     return result if result != _ffi.NULL else None
 
 
-def tspatial_extent_transfn(box: "STBox *", temp: "const Temporal *") -> "STBox *":
-    box_converted = _ffi.cast("STBox *", box)
+def tspatial_extent_transfn(
+    box: "Optional['STBox *']", temp: "const Temporal *"
+) -> "STBox *":
+    box_converted = _ffi.cast("STBox *", box) if box is not None else _ffi.NULL
     temp_converted = _ffi.cast("const Temporal *", temp)
     result = _lib.tspatial_extent_transfn(box_converted, temp_converted)
     _check_error()
@@ -14356,11 +14438,10 @@ def tgeo_space_split(
     sorigin: "const GSERIALIZED *",
     bitmatrix: bool,
     border_inc: bool,
-    space_bins: "GSERIALIZED ***",
-) -> "Tuple['Temporal **', 'int']":
+) -> "Tuple['Temporal **', 'GSERIALIZED ***', 'int']":
     temp_converted = _ffi.cast("const Temporal *", temp)
     sorigin_converted = _ffi.cast("const GSERIALIZED *", sorigin)
-    space_bins_converted = [_ffi.cast("GSERIALIZED **", x) for x in space_bins]
+    space_bins = _ffi.new("GSERIALIZED ***")
     count = _ffi.new("int *")
     result = _lib.tgeo_space_split(
         temp_converted,
@@ -14370,11 +14451,11 @@ def tgeo_space_split(
         sorigin_converted,
         bitmatrix,
         border_inc,
-        space_bins_converted,
+        space_bins,
         count,
     )
     _check_error()
-    return result if result != _ffi.NULL else None, count[0]
+    return result if result != _ffi.NULL else None, space_bins[0], count[0]
 
 
 def tgeo_space_time_split(
@@ -14387,15 +14468,13 @@ def tgeo_space_time_split(
     torigin: int,
     bitmatrix: bool,
     border_inc: bool,
-    space_bins: "GSERIALIZED ***",
-    time_bins: "TimestampTz **",
-) -> "Tuple['Temporal **', 'int']":
+) -> "Tuple['Temporal **', 'GSERIALIZED ***', 'TimestampTz *', 'int']":
     temp_converted = _ffi.cast("const Temporal *", temp)
     duration_converted = _ffi.cast("const Interval *", duration)
     sorigin_converted = _ffi.cast("const GSERIALIZED *", sorigin)
     torigin_converted = _ffi.cast("TimestampTz", torigin)
-    space_bins_converted = [_ffi.cast("GSERIALIZED **", x) for x in space_bins]
-    time_bins_converted = [_ffi.cast("TimestampTz *", x) for x in time_bins]
+    space_bins = _ffi.new("GSERIALIZED ***")
+    time_bins = _ffi.new("TimestampTz **")
     count = _ffi.new("int *")
     result = _lib.tgeo_space_time_split(
         temp_converted,
@@ -14407,12 +14486,17 @@ def tgeo_space_time_split(
         torigin_converted,
         bitmatrix,
         border_inc,
-        space_bins_converted,
-        time_bins_converted,
+        space_bins,
+        time_bins,
         count,
     )
     _check_error()
-    return result if result != _ffi.NULL else None, count[0]
+    return (
+        result if result != _ffi.NULL else None,
+        space_bins[0],
+        time_bins[0],
+        count[0],
+    )
 
 
 def geo_cluster_kmeans(
