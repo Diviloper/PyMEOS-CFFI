@@ -6341,6 +6341,13 @@ def tnumber_to_span(temp: "const Temporal *") -> "Span *":
     return result if result != _ffi.NULL else None
 
 
+def tnumber_to_tbox(temp: "const Temporal *") -> "TBox *":
+    temp_converted = _ffi.cast("const Temporal *", temp)
+    result = _lib.tnumber_to_tbox(temp_converted)
+    _check_error()
+    return result if result != _ffi.NULL else None
+
+
 def tbool_end_value(temp: "const Temporal *") -> "bool":
     temp_converted = _ffi.cast("const Temporal *", temp)
     result = _lib.tbool_end_value(temp_converted)
