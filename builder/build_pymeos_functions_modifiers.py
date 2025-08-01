@@ -48,8 +48,15 @@ def meos_initialize_modifier(_: str) -> str:
             # Assume we are in a wheel and the PROJ data is in the package
             os.environ["PROJ_DATA"] = proj_dir
             os.environ["PROJ_LIB"] = proj_dir
-    _lib.meos_set_spatial_ref_sys_csv(os.path.join(os.path.dirname(__file__), "meos_data", "spatial_ref_sys.csv").encode('utf-8'))
+            
     _lib.meos_initialize()
+    
+    # Check if local spatial ref system csv exists (meaning wheel installation). If it does, use it.
+    wheel_path = os.path.join(
+        os.path.dirname(__file__), "meos_data", "spatial_ref_sys.csv"
+    )
+    if os.path.exists(wheel_path):
+        _lib.meos_set_spatial_ref_sys_csv(wheel_path.encode("utf-8"))
     
     # Timezone is already initialized by meos_initialize, so we only need to set it if tz_str is provided
     if tz_str is not None: 
