@@ -182,6 +182,7 @@ nullable_parameters = {
     ("tfloatbox_value_time_tiles", "torigin"),
     ("stbox_make", "s"),
     ("tsequenceset_make_gaps", "maxt"),
+    ("geo_as_geojson", "srs"),
 }
 
 

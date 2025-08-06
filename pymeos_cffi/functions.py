@@ -10831,10 +10831,10 @@ def geo_as_ewkt(gs: "const GSERIALIZED *", precision: int) -> str:
 
 
 def geo_as_geojson(
-    gs: "const GSERIALIZED *", option: int, precision: int, srs: str
+    gs: "const GSERIALIZED *", option: int, precision: int, srs: "Optional[str]"
 ) -> str:
     gs_converted = _ffi.cast("const GSERIALIZED *", gs)
-    srs_converted = srs.encode("utf-8")
+    srs_converted = srs.encode("utf-8") if srs is not None else _ffi.NULL
     result = _lib.geo_as_geojson(gs_converted, option, precision, srs_converted)
     _check_error()
     result = _ffi.string(result).decode("utf-8")
@@ -12691,9 +12691,9 @@ def tgeo_start_value(temp: "const Temporal *") -> "GSERIALIZED *":
     return result if result != _ffi.NULL else None
 
 
-def tgeo_traversed_area(temp: "const Temporal *") -> "GSERIALIZED *":
+def tgeo_traversed_area(temp: "const Temporal *", unary_union: bool) -> "GSERIALIZED *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    result = _lib.tgeo_traversed_area(temp_converted)
+    result = _lib.tgeo_traversed_area(temp_converted, unary_union)
     _check_error()
     return result if result != _ffi.NULL else None
 
@@ -12804,9 +12804,9 @@ def tpoint_speed(temp: "const Temporal *") -> "Temporal *":
     return result if result != _ffi.NULL else None
 
 
-def tpoint_trajectory(temp: "const Temporal *") -> "GSERIALIZED *":
+def tpoint_trajectory(temp: "const Temporal *", unary_union: bool) -> "GSERIALIZED *":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    result = _lib.tpoint_trajectory(temp_converted)
+    result = _lib.tpoint_trajectory(temp_converted, unary_union)
     _check_error()
     return result if result != _ffi.NULL else None
 
