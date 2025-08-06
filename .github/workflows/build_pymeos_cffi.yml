@@ -219,10 +219,10 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             MACOSX_DEPLOYMENT_TARGET="${{ matrix.os == 'macos-14' && 14 || 13.6 }}"
           CIBW_BEFORE_ALL_LINUX: >
-            dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm &&
+            dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm &&
             dnf -qy module disable postgresql &&
             dnf -y update &&
-            dnf -y install gcc gcc-c++ make cmake postgresql17-devel proj81-devel geos39-devel gsl-devel json-c-devel &&
+            dnf -y install gcc gcc-c++ make cmake postgresql16-devel proj81-devel geos39-devel gsl-devel json-c-devel &&
             git clone --depth 1 --branch ${{ needs.checks.outputs.branch }} https://github.com/MobilityDB/MobilityDB &&
             mkdir MobilityDB/build &&
             cd MobilityDB/build &&
