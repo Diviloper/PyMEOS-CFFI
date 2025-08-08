@@ -10094,16 +10094,14 @@ def tfloat_value_boxes(
 
 
 def tfloat_value_split(
-    temp: "const Temporal *", size: float, origin: float, bins: "double **"
-) -> "Tuple['Temporal **', 'int']":
+    temp: "const Temporal *", size: float, origin: float
+) -> "Tuple['Temporal **', 'double *', 'int']":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    bins_converted = [_ffi.cast("double *", x) for x in bins]
+    bins = _ffi.new("double **")
     count = _ffi.new("int *")
-    result = _lib.tfloat_value_split(
-        temp_converted, size, origin, bins_converted, count
-    )
+    result = _lib.tfloat_value_split(temp_converted, size, origin, bins, count)
     _check_error()
-    return result if result != _ffi.NULL else None, count[0]
+    return result if result != _ffi.NULL else None, bins[0], count[0]
 
 
 def tfloat_value_time_boxes(
@@ -10238,11 +10236,11 @@ def tint_value_split(
     temp: "const Temporal *", vsize: int, vorigin: int
 ) -> "Tuple['Temporal **', 'int *', 'int']":
     temp_converted = _ffi.cast("const Temporal *", temp)
-    value_bins = _ffi.new("int **")
+    bins = _ffi.new("int **")
     count = _ffi.new("int *")
-    result = _lib.tint_value_split(temp_converted, vsize, vorigin, value_bins, count)
+    result = _lib.tint_value_split(temp_converted, vsize, vorigin, bins, count)
     _check_error()
-    return result if result != _ffi.NULL else None, value_bins[0], count[0]
+    return result if result != _ffi.NULL else None, bins[0], count[0]
 
 
 def tint_value_time_boxes(

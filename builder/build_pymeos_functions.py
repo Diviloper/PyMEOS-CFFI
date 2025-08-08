@@ -107,9 +107,9 @@ result_parameters = {
 output_parameters = {
     ("temporal_time_split", "time_bins"),
     ("temporal_time_split", "count"),
-    ("tint_value_split", "value_bins"),
+    ("tint_value_split", "bins"),
     ("tint_value_split", "count"),
-    ("tfloat_value_split", "value_bins"),
+    ("tfloat_value_split", "bins"),
     ("tfloat_value_split", "count"),
     ("tint_value_time_split", "value_bins"),
     ("tint_value_time_split", "time_bins"),
