@@ -76,7 +76,9 @@ function_modifiers = {
     "spanset_as_wkb": as_wkb_modifier,
     "tbox_as_wkb": as_wkb_modifier,
     "stbox_as_wkb": as_wkb_modifier,
-    "tstzset_make": tstzset_make_modifier,
+    "pose_as_wkb": as_wkb_modifier,
+    "cbuffer_as_wkb": as_wkb_modifier,
+    "npoint_as_wkb": as_wkb_modifier,
     "dateset_make": array_parameter_modifier("values", "count"),
     "intset_make": array_parameter_modifier("values", "count"),
     "bigintset_make": array_parameter_modifier("values", "count"),
@@ -85,6 +87,20 @@ function_modifiers = {
     "geoset_make": array_length_remover_modifier("values", "count"),
     "tsequenceset_make_gaps": array_length_remover_modifier("instants", "count"),
     "mi_span_span": mi_span_span_modifier,
+}
+
+# List of parameters that should be removed altogether at the beginning (e.g. they are redundant)
+removable_parameters: set[tuple[str, str]] = {
+    ("temporal_as_hexwkb", "size_out"),
+    ("set_as_hexwkb", "size_out"),
+    ("span_as_hexwkb", "size_out"),
+    ("spanset_as_hexwkb", "size_out"),
+    ("tbox_as_hexwkb", "size"),
+    ("stbox_as_hexwkb", "size"),
+    ("pose_as_hexwkb", "size"),
+    ("cbuffer_as_hexwkb", "size"),
+    ("npoint_as_hexwkb", "size_out"),
+    ("tstzset_make", "size_out"),
 }
 
 # List of result function parameters in tuples of (function, parameter)
@@ -117,8 +133,6 @@ output_parameters = {
     ("tgeo_space_time_split", "space_bins"),
     ("tgeo_space_time_split", "time_bins"),
     ("tgeo_space_time_split", "count"),
-    ("tbox_as_hexwkb", "size"),
-    ("stbox_as_hexwkb", "size"),
     ("tintbox_value_time_tiles", "count"),
     ("tfloatbox_value_time_tiles", "count"),
     ("stbox_space_time_tiles", "count"),
@@ -184,6 +198,10 @@ nullable_parameters = {
 # Checks if parameter in function is nullable
 def is_nullable_parameter(function: str, parameter: str) -> bool:
     return (function, parameter) in nullable_parameters
+
+
+def parameter_should_be_removed(function: str, parameter: Parameter) -> bool:
+    return (function, parameter.name) in removable_parameters
 
 
 # Checks if parameter in function is actually a result parameter
@@ -397,6 +415,13 @@ def get_return_type(inner_return_type) -> ReturnType:
 
 
 def build_function_string(function_name: str, return_type: ReturnType, parameters: list[Parameter]) -> str:
+    # Check if any parameter should be removed
+    i = 0
+    while i < len(parameters):
+        if parameter_should_be_removed(function_name, parameters[i]):
+            parameters.pop(i)
+        else:
+            i += 1
     # Check if there is a result param, i.e., output parameters that are the actual
     # product of the function, instead of whatever the function returns (typically
     # void or bool/int indicating the success or failure of the function)
