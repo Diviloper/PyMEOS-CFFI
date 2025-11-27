@@ -2998,7 +2998,6 @@ extern Temporal *tne_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 
 //#include <meos.h>
 //#include <meos_internal_geo.h>
-//#include "temporal/set.h"
 
 typedef struct Pose Pose;
 
@@ -3138,12 +3137,9 @@ extern Temporal *tne_tpose_pose(const Temporal *temp, const Pose *pose);
 
 //#include <stdbool.h>
 
-//#include <postgres.h>
-
 //#include <meos.h>
 //#include <meos_pose.h>
 //#include <meos_internal.h>
-//#include "geo/stbox.h"
 
   //#else
   

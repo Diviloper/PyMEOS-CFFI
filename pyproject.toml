@@ -35,7 +35,7 @@ requires-python = '>=3.10'
 dependencies = [
     'cffi',
     'python-dateutil',
-    'shapely'
+    'shapely',
 ]
 
 [project.urls]
