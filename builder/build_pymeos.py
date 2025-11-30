@@ -23,12 +23,14 @@ ffibuilder.cdef(content)
 
 
 def get_library_dirs():
-    paths = ["/usr/local/lib", "/opt/homebrew/lib"]
+    path_string = os.environ.get("MEOS_LIB_DIR", "/usr/local/lib;/opt/homebrew/lib")
+    paths = path_string.split(";")
     return [path for path in paths if os.path.exists(path)]
 
 
 def get_include_dirs():
-    paths = ["/usr/local/include", "/opt/homebrew/include"]
+    path_string = os.environ.get("MEOS_INCLUDE_DIR", "/usr/local/include;/opt/homebrew/include")
+    paths = path_string.split(";")
     return [path for path in paths if os.path.exists(path)]
 
 
