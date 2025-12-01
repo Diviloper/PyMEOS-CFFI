@@ -22,6 +22,16 @@ This package wraps the MEOS C library in two different levels:
 
 # Developing PyMEOS-CFFI
 
+To develop PyMEOS-CFFI, we recommend managing your environment with [`uv`](https://docs.astral.sh/uv/). First, begin getting the required dependencies with the following command:
+
+```bash
+uv sync --no-install-project
+```
+
+> [!NOTE]
+> The `--no-install-project` prevents `uv` from building the package when installing the dependencies.  
+> This is only necessary if the build is broken, which usually happens after some MEOS updates.
+
 The following files are used to develop PyMEOS-CFFI:
 
 - [`builder`](builder/): directory containing all the files used to generate the MEOS Python binding and the PyMEOS-CFFI wrapper.
@@ -40,8 +50,8 @@ The following files are used to develop PyMEOS-CFFI:
   - [`errors.py`](pymeos_cffi/errors.py): contains the Python error wrappers and management functions.
 
 > [!IMPORTANT]
-> Do NOT modify manually `builder/meos.h`, `pymeos_cffi/functions.py`, or `pymeos_cffi/__init__.py`, as they are generated automatically.
-> If you need to manually change the generation of the meos header file (`meos.h`), check the [builder code](builder/build_header.py) to see how it is generated.
+> Do NOT modify manually `builder/meos.h`, `pymeos_cffi/functions.py`, or `pymeos_cffi/__init__.py`, as they are generated automatically.  
+> If you need to manually change the generation of the meos header file (`meos.h`), check the [builder code](builder/build_header.py) to see how it is generated.  
 > If you need to add some manual changes to the `pymeos_cffi` files, do them in the template files (in [`builder/templates`](builder/templates)) or through the function modifiers.
 
 The following sections show how to build the two wrappers.
@@ -204,5 +214,5 @@ To trigger it, push all the changes and then create a new tag with the following
 Development versions are marked as prereleases automatically.
 
 > [!IMPORTANT]
-> Make sure the version of the tag matches exactly the version of the package. Otherwise, the workflow will fail and the package will not be published.
+> Make sure the version of the tag matches exactly the version of the package. Otherwise, the workflow will fail and the package will not be published.  
 > If publishing a new version, remember always to update the version number in the (init template)[builder/tempaltes/init.py].
