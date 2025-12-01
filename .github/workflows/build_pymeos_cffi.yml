@@ -112,6 +112,23 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "Version is $version."
 
+  lint:
+    name: Lint code with Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install Ruff
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "--version"
+
+      - name: Check rules
+        run: "ruff check"
+
+      - name: Check format
+        run: "ruff format --check --diff"
 
   build_sdist:
     name: Build PyMEOS CFFI source distribution
