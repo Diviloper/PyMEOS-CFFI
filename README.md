@@ -112,7 +112,10 @@ To do so, you can simply run the following commands:
 
 ```bash
 uv run builder/build_header.py
+
 uv run builder/build_pymeos_functions.py
+uvx ruff format
+uvx ruff check --fix
 
 uv build
 ```
@@ -149,4 +152,43 @@ uv run builder/build_header.py /path/to/directory/with/headers/ /path/to/binary.
 
 ## 2. Generate the function wrappers
 
-This step takes every function in the generated header file and wraps it into a Python function. The functions
+This step takes every function in the generated header file and wraps it into a Python function. The functions take care of performing standard conversions between Python and C types, as well as checking if there has been any error during the execution of the MEOS function, and raising a Python exception if necessary.
+
+To generate the function wrappers, run the following command:
+
+```bash
+uv run builder/build_pymeos_functions.py
+```
+
+If you want to build the package afterwards, it is recommended to run the formatter on the generated code:
+
+```bash
+uvx ruff format
+uvx ruff check --fix
+```
+
+> [!IMPORTANT]  
+> If you are building the package to publish it, formatting is mandatory!
+
+## 3. Build package
+
+To build the package, just run the following command:
+
+```bash
+uv build
+```
+
+This will create a source distribution (`dist/pymeos_cffi-<version>.tar.gz`) and a built distribution (`dist/pymeos_cffi-<version>.whl`) that can be installed.
+
+> [!NOTE]
+> If you want to publish the package to PyPI, you don't need to build it first. Just push the changes to the repository and check the next section.
+
+# Publishing to PyPI
+
+Publishing to PyPI and creating GitHub Releases is done automatically through GitHub Actions.
+To trigger it, push all the changes and then create a new tag with the following format `v<major>.<minor>.<patch>[dev]`, where `<major>`, `<minor>`, and `<patch>` are integers and `[dev]` is an optional string for development versions (e.g. `a1` or `rc3`).
+
+Development versions are marked as prereleases automatically.
+
+> [!IMPORTANT]
+> Make sure the version of the tag matches exactly the version of the package. Otherwise, the workflow will fail and the package will not be published.
