@@ -20,22 +20,32 @@ This package wraps the MEOS C library in two different levels:
 - **MEOS Python binding:** wrapper around the MEOS C library, created with the CFFI package, that allows calling the MEOS functions from Python. The resulting wrapper is a shared library (`_meos_cffi.so` in linux, `_meos_cffi.dylib` in macOS) that can be imported in Python. It requires MEOS to be installed in the system.
 - **PyMEOS-CFFI package:** wrapper around the MEOS Python binding that handles many standard conversions between Python and C (e.g. `char *` and `str`) types and manages the error system. The resulting wrapper is a standard Python package that can be installed via `pip` or other package managers. The resulting package comes with MEOS and the Python binding bundled.
 
-# Usage
+# Developing PyMEOS-CFFI
 
-## Installation
+The following files are used to develop PyMEOS-CFFI:
 
-````shell
-pip install pymeos-cffi
-````
+- [`builder`](builder/): directory containing all the files used to generate the MEOS Python binding and the PyMEOS-CFFI wrapper.
+  - [`build_header.py`](builder/build_header.py): generates the header file ([`meos.h`](builder/meos.h)) for the MEOS Python binding.
+  - [`build_pymeos.py`](builder/build_pymeos.py): builds the MEOS Python binding.
+  - [`build_pymeos_functions.py`](builder/build_pymeos_functions.py): generates the Python function wrappers for the PyMEOS-CFFI package.
+  - [`build_pymeos_functions_modifiers.py`](builder/build_pymeos_functions_modifiers.py): contains modifiers for some of the Python function wrappers.
+  - [`objects.py`](builder/objects.py): contains the definitions of several standard conversions between Python and C types.
+  - [`templates`](builder/templates/): directory containing all the template files used to generate the PyMEOS-CFFI wrapper.
+    - [`init.py`](builder/templates/init.py): template for the `__init__.py` file of the PyMEOS-CFFI package. In particular, it contains the version number for the package.
+    - [`functions.py`](builder/templates/functions.py): template for the `functions.py` file of the PyMEOS-CFFI package.
+- [`pymeos_cffi`](pymeos_cffi/): directory containing all the files of the PyMEOS-CFFI package.
+  - [`__init__.py`](pymeos_cffi/__init__.py): contains the declarations for the PyMEOS-CFFI package. This file is generated automatically.
+  - [`functions.py`](pymeos_cffi/functions.py): contains the Python function wrappers for the PyMEOS-CFFI package. This file is generated automatically.
+  - [`enums.py`](pymeos_cffi/enums.py): contains the Python enum wrappers for the PyMEOS-CFFI package.
+  - [`errors.py`](pymeos_cffi/errors.py): contains the Python error wrappers and management functions.
 
-## Source installation
-If the pre-built distribution is not available for your system, `pip` will try to make source distribution. For that, you will 
-need to make sure you have the following requirements:
+> [!IMPORTANT]
+> Do NOT modify manually `builder/meos.h`, `pymeos_cffi/functions.py`, or `pymeos_cffi/__init__.py`, as they are generated automatically.
+> If you need to manually change the generation of the meos header file (`meos.h`), check the [builder code](builder/build_header.py) to see how it is generated.
+> If you need to add some manual changes to the `pymeos_cffi` files, do them in the template files (in [`builder/templates`](builder/templates)) or through the function modifiers.
 
-- C compiler
-- [MEOS Library](https://www.libmeos.org/)
-
-If the installation fails, you can submit an issue in the [PyMEOS-CFFI issue tracker](https://github.com/MobilityDB/PyMEOS-CFFI/issues)
+The following sections show how to build the two wrappers.
+This is only needed for local testing, as the wrappers are build automatically on the repository as part of the release pipeline.
 
 # Building the MEOS Python binding
 
@@ -99,6 +109,9 @@ export MEOS_INCLUDE_DIR="/path/to/include/;/path/to/include2/"
 export MEOS_LIB_DIR=/path/to/lib/dir/
 uv run builder/build_pymeos.py
 ```
+
+> [!TIP]
+> If there is any error during compilation, it is likely that the underlying MEOS platform has some changes that need special attention. Good luck with that :)
 
 # Building the PyMEOS-CFFI Package
 
@@ -192,3 +205,4 @@ Development versions are marked as prereleases automatically.
 
 > [!IMPORTANT]
 > Make sure the version of the tag matches exactly the version of the package. Otherwise, the workflow will fail and the package will not be published.
+> If publishing a new version, remember always to update the version number in the (init template)[builder/tempaltes/init.py].
