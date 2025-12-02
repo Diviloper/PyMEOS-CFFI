@@ -10,7 +10,7 @@ def array_length_remover_modifier(list_name: str, length_param_name: str = "coun
 
 def array_parameter_modifier(list_name: str, length_param_name: str | None = None) -> Callable[[str], str]:
     def custom_array_modifier(function: str) -> str:
-        type_regex = list_name + r": Annotated\[(?:(?:_ffi\.CData)|(?:list)), '([\w \*]+)'\]"
+        type_regex = list_name + r": Annotated\[(?:(?:FFI\.CData)|(?:list)), '([\w \*]+)'\]"
         match = next(re.finditer(type_regex, function))
         whole_type = match.group(1)
         base_type = " ".join(whole_type.split(" ")[:-1])
@@ -78,7 +78,7 @@ def text2cstring_modifier(_: str) -> str:
 
 def from_wkb_modifier(function: str, return_type: str) -> Callable[[str], str]:
     return (
-        lambda _: f"""def {function}(wkb: bytes) -> '{return_type} *':
+        lambda _: f"""def {function}(wkb: bytes) -> Annotated[FFI.CData, '{return_type} *']:
     wkb_converted = _ffi.new('uint8_t []', wkb)
     result = _lib.{function}(wkb_converted, len(wkb))
     return result if result != _ffi.NULL else None"""
@@ -87,7 +87,7 @@ def from_wkb_modifier(function: str, return_type: str) -> Callable[[str], str]:
 
 def as_wkb_modifier(function: str) -> str:
     return function.replace(
-        "-> tuple[Annotated[_ffi.CData, 'uint8_t *'], Annotated[_ffi.CData, 'size_t *']]:", "-> bytes:"
+        "-> tuple[Annotated[FFI.CData, 'uint8_t *'], Annotated[FFI.CData, 'size_t *']]:", "-> bytes:"
     ).replace(
         "return result if result != _ffi.NULL else None, size_out[0]",
         "result_converted = bytes(result[i] for i in range(size_out[0])) if result != _ffi.NULL else None\n"
@@ -110,7 +110,7 @@ def tstzset_make_modifier(function: str) -> str:
 def spanset_make_modifier(function: str) -> str:
     return (
         function.replace(
-            "spans: Annotated[_ffi.CData, 'Span *'], count: int", "spans: list[Annotated[_ffi.CData, 'Span *']]"
+            "spans: Annotated[FFI.CData, 'Span *'], count: int", "spans: list[Annotated[FFI.CData, 'Span *']]"
         )
         .replace("_ffi.cast('Span *', spans)", "_ffi.new('Span []', spans)")
         .replace(", count", ", len(spans)")
@@ -119,5 +119,5 @@ def spanset_make_modifier(function: str) -> str:
 
 def mi_span_span_modifier(function: str) -> str:
     return function.replace(
-        '-> Annotated[_ffi.CData, "Span *"]', '-> tuple[Annotated[_ffi.CData, "Span *"], int]'
+        '-> Annotated[FFI.CData, "Span *"]', '-> tuple[Annotated[FFI.CData, "Span *"], int]'
     ).replace("return out_result", "return out_result, result")

@@ -70,6 +70,9 @@ function_modifiers = {
     "spanset_from_wkb": from_wkb_modifier("spanset_from_wkb", "SpanSet"),
     "tbox_from_wkb": from_wkb_modifier("tbox_from_wkb", "TBOX"),
     "stbox_from_wkb": from_wkb_modifier("stbox_from_wkb", "STBOX"),
+    "cbuffer_from_wkb": from_wkb_modifier("cbuffer_from_wkb", "CBuffer"),
+    "npoint_from_wkb": from_wkb_modifier("npoint_from_wkb", "NPoint"),
+    "pose_from_wkb": from_wkb_modifier("pose_from_wkb", "Pose"),
     "temporal_as_wkb": as_wkb_modifier,
     "set_as_wkb": as_wkb_modifier,
     "span_as_wkb": as_wkb_modifier,
@@ -394,7 +397,7 @@ def get_param_conversion(param_type: str) -> Conversion:
     else:
         return Conversion(
             param_type,
-            f"Annotated[_ffi.CData, '{param_type}']",
+            f"Annotated[FFI.CData, '{param_type}']",
             lambda name: f"_ffi.cast('{param_type}', {name})",
             lambda name: name,
         )
@@ -411,7 +414,7 @@ def get_return_type(inner_return_type) -> ReturnType:
             conversion.c_to_p("result") if conversion.c_to_p else None,
         )
     # Otherwise, don't transform anything
-    return ReturnType(inner_return_type, "_ffi.CData", None)
+    return ReturnType(inner_return_type, "FFI.CData", None)
 
 
 def build_function_string(function_name: str, return_type: ReturnType, parameters: list[Parameter]) -> str:

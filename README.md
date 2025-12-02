@@ -57,8 +57,8 @@ To build the binding, you just need to perform two steps
 To do so, simply run the following commands:
 
 ```bash
-uv run builder/build_header.py
-uv run builder/build_pymeos.py
+uv run --no-project builder/build_header.py
+uv run --no-project  builder/build_pymeos.py
 ```
 
 If any of the steps fails, or you want more information about the process, the following subsections provide more details.
@@ -70,7 +70,7 @@ This step is only necessary if the underlying MEOS Library has been updated. Oth
 To generate the header file, you just need to run the following command:
 
 ```bash
-uv run builder/build_header.py
+uv run --no-project  builder/build_header.py
 ```
 
 This command grabs the meos header and binary files from the default location and combines them into a single file ([`builder/meos.h`](builder/meos.h)) that will be used to generate the binding.
@@ -88,7 +88,7 @@ The default locations are:
 
 If you installed meos in a different location, you can pass the paths to the command (note that all header files must be in the same directory, as only one path is allowed):
 ```bash
-uv run builder/build_header.py /path/to/directory/with/headers/ /path/to/binary.so
+uv run --no-project  builder/build_header.py /path/to/directory/with/headers/ /path/to/binary.so
 ```
 
 ## 2. Build bindings
@@ -97,7 +97,7 @@ This step builds the shared library based on the generated header file, and link
 
 To build the bindings, just run the following command:
 ```bash
-uv run builder/build_pymeos.py
+uv run --no-project  builder/build_pymeos.py
 ```
 
 As in the previous step, this command assumes that the MEOS header and binary files are in the default locations.
@@ -107,7 +107,7 @@ If they are not, you can specify alternative locations with the `MEOS_INCLUDE_DI
 ```bash
 export MEOS_INCLUDE_DIR="/path/to/include/;/path/to/include2/"
 export MEOS_LIB_DIR=/path/to/lib/dir/
-uv run builder/build_pymeos.py
+uv run --no-project  builder/build_pymeos.py
 ```
 
 > [!TIP]
@@ -124,9 +124,9 @@ To update and build the PyMEOS-CFFI wrapper, you need to go through the followin
 To do so, you can simply run the following commands:
 
 ```bash
-uv run builder/build_header.py
+uv run --no-project  builder/build_header.py
 
-uv run builder/build_pymeos_functions.py
+uv run --no-project  builder/build_pymeos_functions.py
 uvx ruff format
 uvx ruff check --fix
 
@@ -142,7 +142,7 @@ This step is only necessary if the underlying MEOS Library has been updated. Oth
 To generate the header file, you just need to run the following command:
 
 ```bash
-uv run builder/build_header.py
+uv run --no-project  builder/build_header.py
 ```
 
 This command grabs the meos header and binary files from the default location and combines them into a single file ([`builder/meos.h`](builder/meos.h)) that will be used to generate the binding.
@@ -160,7 +160,7 @@ The default locations are:
 
 If you installed meos in a different location, you can pass the paths to the command (note that all header files must be in the same directory, as only one path is allowed):
 ```bash
-uv run builder/build_header.py /path/to/directory/with/headers/ /path/to/binary.so
+uv run --no-project  builder/build_header.py /path/to/directory/with/headers/ /path/to/binary.so
 ```
 
 ## 2. Generate the function wrappers
@@ -170,7 +170,7 @@ This step takes every function in the generated header file and wraps it into a 
 To generate the function wrappers, run the following command:
 
 ```bash
-uv run builder/build_pymeos_functions.py
+uv run --no-project  builder/build_pymeos_functions.py
 ```
 
 If you want to build the package afterwards, it is recommended to run the formatter on the generated code:
